@@ -1,0 +1,53 @@
+name: CI with Docker Compose
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Start services with docker-compose
+      - name: Run docker-compose
+        run: docker compose up -d
+
+      # Wait for MySQL to be healthy
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            if docker inspect --format='{{json .State.Health.Status}}' mysql | grep -q "healthy"; then
+              echo "✅ MySQL is healthy!"
+              break
+            fi
+            echo "⏳ Waiting for MySQL..."
+            sleep 5
+          done
+
+      # Wait for Flask app to be healthy
+      - name: Wait for Flask app
+        run: |
+          for i in {1..30}; do
+            if docker inspect --format='{{json .State.Health.Status}}' flask-app | grep -q "healthy"; then
+              echo "✅ Flask app is healthy!"
+              break
+            fi
+            echo "⏳ Waiting for Flask app..."
+            sleep 5
+          done
+
+      - name: Run tests
+        run: |
+          curl -f http://localhost:5000/health
+          echo "✅ Health check passed!"
