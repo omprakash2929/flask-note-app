@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, jsonify
 from flask_mysqldb import MySQL
 
 app = Flask(__name__)
@@ -14,6 +14,7 @@ app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB', 'default_db')
 mysql = MySQL(app)
 
 def init_db():
+    """Create messages table if it doesn't exist."""
     with app.app_context():
         cur = mysql.connection.cursor()
         cur.execute('''
@@ -22,11 +23,11 @@ def init_db():
             message TEXT
         );
         ''')
-        mysql.connection.commit()  
+        mysql.connection.commit()
         cur.close()
 
 @app.route('/')
-def hello():
+def index():
     cur = mysql.connection.cursor()
     cur.execute('SELECT message FROM messages')
     messages = cur.fetchall()
@@ -42,7 +43,17 @@ def submit():
     cur.close()
     return jsonify({'message': new_message})
 
+@app.route('/health')
+def health():
+    """Healthcheck endpoint for CI/CD"""
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT 1")  # simple DB check
+        cur.close()
+        return jsonify({"status": "ok"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "details": str(e)}), 500
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
-
