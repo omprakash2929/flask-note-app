@@ -22,7 +22,7 @@ services:
       start_period: 60s
 
   flask-app:
-    image: ompraksh2929/flasknoteapp:2.0
+    image: ompraksh2929/flasknoteapp:3.0
     container_name: flask-app
     ports:
       - "5000:5000"

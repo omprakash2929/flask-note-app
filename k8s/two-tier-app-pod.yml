@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: two-tier-app-pod
-    image: ompraksh2929/flasknoteapp:2.0
+    image: ompraksh2929/flasknoteapp:3.0
     env:
       - name: MYSQL_HOST
         value: "10.98.19.211"          # this is your mysql's service clusture IP, Make sure to change it with yours

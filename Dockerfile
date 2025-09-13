@@ -20,6 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code
 COPY . .
 
+RUN apt-get update && apt-get install -y curl
+HEALTHCHECK --interval=10s --timeout=5s --retries=5 CMD curl -f http://localhost:5000/health || exit 1
+
 # Specify the command to run your application
 CMD ["python", "app.py"]
 
